@@ -72,12 +72,23 @@ async function main() {
   try {
     logger.info('Starting Discord GitHub Bot...');
     
+    // Environment check
+    console.log('=== Environment Variables Check ===');
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('DISCORD_BOT_TOKEN:', process.env.DISCORD_BOT_TOKEN ? 'Set' : 'Not set');
+    console.log('GITHUB_TOKEN:', process.env.GITHUB_TOKEN ? 'Set' : 'Not set');
+    console.log('TARGET_CHANNEL_ID:', process.env.TARGET_CHANNEL_ID);
+    console.log('TARGET_GUILD_ID:', process.env.TARGET_GUILD_ID);
+    console.log('================================');
+    
     // Validate required environment variables
     if (!process.env.DISCORD_BOT_TOKEN) {
+      console.error('ERROR: DISCORD_BOT_TOKEN is not set in Railway Variables!');
       throw new Error('DISCORD_BOT_TOKEN is required');
     }
     
     if (!process.env.GITHUB_TOKEN) {
+      console.error('ERROR: GITHUB_TOKEN is not set in Railway Variables!');
       throw new Error('GITHUB_TOKEN is required');
     }
     

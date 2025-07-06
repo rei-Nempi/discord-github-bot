@@ -35,7 +35,7 @@
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@octokit/rest": "^21.0.2",
+    "@octokit/rest": "^19.0.13",
     "@t09tanaka/mcp-simple-voicevox": "^0.1.0",
     "discord.js": "^14.16.3",
     "dotenv": "^16.4.7",

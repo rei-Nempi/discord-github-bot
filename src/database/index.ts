@@ -1,7 +1,7 @@
 import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
-import { createLogger } from '../utils/logger.js';
-import { DatabaseError } from '../types/index.js';
+import { createLogger } from '../utils/logger';
+import { DatabaseError } from '../types/index';
 import fs from 'fs';
 import path from 'path';
 

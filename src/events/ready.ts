@@ -1,6 +1,6 @@
 import { Events, ActivityType } from 'discord.js';
-import { createLogger } from '../utils/logger.js';
-import { initializeDatabase } from '../database/index.js';
+import { createLogger } from '../utils/logger';
+import { initializeDatabase } from '../database/index';
 
 const logger = createLogger('ready');
 

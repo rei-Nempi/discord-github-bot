@@ -1,5 +1,5 @@
 import { Events, Message } from 'discord.js';
-import { createLogger } from '../utils/logger.js';
+import { createLogger } from '../utils/logger';
 
 const logger = createLogger('messageCreate');
 

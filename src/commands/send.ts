@@ -1,8 +1,8 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
-import { createLogger } from '../utils/logger.js';
-import { GitHubService } from '../services/github.js';
-import { getCacheService } from '../services/cache.js';
-import { ChannelNotifier } from '../utils/channelNotifier.js';
+import { createLogger } from '../utils/logger';
+import { GitHubService } from '../services/github';
+import { getCacheService } from '../services/cache';
+import { ChannelNotifier } from '../utils/channelNotifier';
 
 const logger = createLogger('send-command');
 

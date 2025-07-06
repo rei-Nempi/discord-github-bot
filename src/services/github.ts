@@ -1,12 +1,12 @@
 import { Octokit } from '@octokit/rest';
-import { createLogger } from '../utils/logger.js';
+import { createLogger } from '../utils/logger';
 import { 
   GitHubIssue, 
   GitHubRepository, 
   IGitHubService, 
   RateLimitInfo,
   GitHubAPIError
-} from '../types/index.js';
+} from '../types/index';
 
 const logger = createLogger('github-service');
 

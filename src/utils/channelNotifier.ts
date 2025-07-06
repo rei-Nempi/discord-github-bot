@@ -1,6 +1,6 @@
 import { Client, TextChannel, EmbedBuilder } from 'discord.js';
-import { createLogger } from './logger.js';
-import { GitHubIssue, EMBED_COLORS } from '../types/index.js';
+import { createLogger } from './logger';
+import { GitHubIssue, EMBED_COLORS } from '../types/index';
 
 const logger = createLogger('channel-notifier');
 

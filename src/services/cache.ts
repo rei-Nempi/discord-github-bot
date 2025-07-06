@@ -1,13 +1,13 @@
 import NodeCache from 'node-cache';
-import { createLogger } from '../utils/logger.js';
-import { getDatabaseManager } from '../database/index.js';
+import { createLogger } from '../utils/logger';
+import { getDatabaseManager } from '../database/index';
 import { 
   ICacheService, 
   CacheError, 
   CACHE_KEYS, 
   BOT_LIMITS,
   GitHubIssue 
-} from '../types/index.js';
+} from '../types/index';
 
 const logger = createLogger('cache-service');
 

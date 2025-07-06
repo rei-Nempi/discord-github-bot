@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { Client, GatewayIntentBits, Collection } from 'discord.js';
-import { createLogger } from './utils/logger.js';
-import { closeDatabase } from './database/index.js';
+import { createLogger } from './utils/logger';
+import { closeDatabase } from './database/index';
 import fs from 'fs';
 import path from 'path';
 

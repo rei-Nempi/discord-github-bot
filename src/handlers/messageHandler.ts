@@ -1,8 +1,8 @@
 import { Message } from 'discord.js';
-import { createLogger } from '../utils/logger.js';
-import { GitHubService } from '../services/github.js';
-import { getCacheService } from '../services/cache.js';
-import { IssuePattern, ISSUE_PATTERNS, BOT_LIMITS, EMBED_COLORS, GitHubIssue } from '../types/index.js';
+import { createLogger } from '../utils/logger';
+import { GitHubService } from '../services/github';
+import { getCacheService } from '../services/cache';
+import { IssuePattern, ISSUE_PATTERNS, BOT_LIMITS, EMBED_COLORS, GitHubIssue } from '../types/index';
 
 const logger = createLogger('messageHandler');
 

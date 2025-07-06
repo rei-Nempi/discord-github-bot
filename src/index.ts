@@ -6,7 +6,11 @@ import fs from 'fs';
 import path from 'path';
 
 // Load environment variables
-config();
+try {
+  config();
+} catch (error) {
+  console.error('Error loading dotenv:', error);
+}
 
 // Create logger instance
 const logger = createLogger('main');
@@ -26,11 +30,12 @@ const client = new Client({
 // Load events
 async function loadEvents() {
   const eventsPath = path.join(__dirname, 'events');
+  console.log('Loading events from:', eventsPath);
   const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js') || file.endsWith('.ts'));
 
   for (const file of eventFiles) {
     const filePath = path.join(eventsPath, file);
-    const event = await import(filePath);
+    const event = require(filePath);
     
     if (event.default.once) {
       client.once(event.default.name, (...args) => event.default.execute(...args));
@@ -56,7 +61,7 @@ async function loadCommands() {
 
   for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
-    const command = await import(filePath);
+    const command = require(filePath);
     
     if ('data' in command.default && 'execute' in command.default) {
       (client as any).commands.set(command.default.data.name, command.default);

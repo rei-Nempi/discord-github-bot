@@ -31,7 +31,7 @@ const client = new Client({
 async function loadEvents() {
   const eventsPath = path.join(__dirname, 'events');
   console.log('Loading events from:', eventsPath);
-  const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js') || file.endsWith('.ts'));
+  const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js') && !file.endsWith('.d.ts'));
 
   for (const file of eventFiles) {
     const filePath = path.join(eventsPath, file);
@@ -64,7 +64,7 @@ async function loadCommands() {
     return;
   }
   
-  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js') || file.endsWith('.ts'));
+  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js') && !file.endsWith('.d.ts'));
 
   for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);

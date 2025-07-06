@@ -1,0 +1,25 @@
+[Unit]
+Description=Discord GitHub Bot
+After=network.target
+
+[Service]
+Type=simple
+User=r-ishii
+WorkingDirectory=/Users/r-ishii/discord-github-bot
+ExecStart=/usr/local/bin/node dist/index.js
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+EnvironmentFile=/Users/r-ishii/discord-github-bot/.env
+
+# ログ設定
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=discord-bot
+
+# セキュリティ設定
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

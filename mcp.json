@@ -1,0 +1,114 @@
+{
+  "mcpServers": {
+    "discord-github-bot": {
+      "command": "node",
+      "args": ["dist/mcp-server.js"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "voicevox": {
+      "command": "npx",
+      "args": ["@t09tanaka/mcp-simple-voicevox"]
+    }
+  },
+  "tools": [
+    {
+      "name": "get-issue",
+      "description": "GitHub issueの情報を取得します",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "リポジトリのオーナー名"
+          },
+          "repo": {
+            "type": "string",
+            "description": "リポジトリ名"
+          },
+          "issue_number": {
+            "type": "number",
+            "description": "Issue番号"
+          }
+        },
+        "required": ["owner", "repo", "issue_number"]
+      }
+    },
+    {
+      "name": "search-issues",
+      "description": "GitHub issueを検索します",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "description": "リポジトリのオーナー名"
+          },
+          "repo": {
+            "type": "string",
+            "description": "リポジトリ名"
+          },
+          "query": {
+            "type": "string",
+            "description": "検索クエリ"
+          },
+          "state": {
+            "type": "string",
+            "enum": ["open", "closed", "all"],
+            "description": "Issueの状態"
+          }
+        },
+        "required": ["owner", "repo", "query"]
+      }
+    },
+    {
+      "name": "get-guild-config",
+      "description": "DiscordサーバーのBot設定を取得します",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "guild_id": {
+            "type": "string",
+            "description": "DiscordサーバーのID"
+          }
+        },
+        "required": ["guild_id"]
+      }
+    },
+    {
+      "name": "update-guild-config",
+      "description": "DiscordサーバーのBot設定を更新します",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "guild_id": {
+            "type": "string",
+            "description": "DiscordサーバーのID"
+          },
+          "repository": {
+            "type": "string",
+            "description": "対象リポジトリ (owner/repo形式)"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Bot機能の有効/無効"
+          }
+        },
+        "required": ["guild_id"]
+      }
+    }
+  ],
+  "resources": [
+    {
+      "uri": "discord://guild/{guild_id}/config",
+      "name": "Guild Config",
+      "description": "DiscordサーバーのBot設定"
+    },
+    {
+      "uri": "github://repos/{owner}/{repo}/issues/{issue_number}",
+      "name": "GitHub Issue",
+      "description": "GitHub Issue情報"
+    }
+  ]
+}

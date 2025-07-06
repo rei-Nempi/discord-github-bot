@@ -1,0 +1,137 @@
+import { config } from 'dotenv';
+import { Client, GatewayIntentBits, Collection } from 'discord.js';
+import { createLogger } from './utils/logger.js';
+import { closeDatabase } from './database/index.js';
+import fs from 'fs';
+import path from 'path';
+
+// Load environment variables
+config();
+
+// Create logger instance
+const logger = createLogger('main');
+
+// Create Discord client
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+});
+
+// Commands collection (for future slash commands)
+(client as any).commands = new Collection();
+
+// Load events
+async function loadEvents() {
+  const eventsPath = path.join(__dirname, 'events');
+  const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js') || file.endsWith('.ts'));
+
+  for (const file of eventFiles) {
+    const filePath = path.join(eventsPath, file);
+    const event = await import(filePath);
+    
+    if (event.default.once) {
+      client.once(event.default.name, (...args) => event.default.execute(...args));
+    } else {
+      client.on(event.default.name, (...args) => event.default.execute(...args));
+    }
+    
+    logger.info(`Loaded event: ${event.default.name}`);
+  }
+}
+
+// Load commands (for future implementation)
+async function loadCommands() {
+  const commandsPath = path.join(__dirname, 'commands');
+  
+  // Check if commands directory exists
+  if (!fs.existsSync(commandsPath)) {
+    logger.info('Commands directory not found, skipping command loading');
+    return;
+  }
+  
+  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js') || file.endsWith('.ts'));
+
+  for (const file of commandFiles) {
+    const filePath = path.join(commandsPath, file);
+    const command = await import(filePath);
+    
+    if ('data' in command.default && 'execute' in command.default) {
+      (client as any).commands.set(command.default.data.name, command.default);
+      logger.info(`Loaded command: ${command.default.data.name}`);
+    } else {
+      logger.warn(`Command at ${filePath} is missing required "data" or "execute" property`);
+    }
+  }
+}
+
+// Bot startup
+async function main() {
+  try {
+    logger.info('Starting Discord GitHub Bot...');
+    
+    // Validate required environment variables
+    if (!process.env.DISCORD_BOT_TOKEN) {
+      throw new Error('DISCORD_BOT_TOKEN is required');
+    }
+    
+    if (!process.env.GITHUB_TOKEN) {
+      throw new Error('GITHUB_TOKEN is required');
+    }
+    
+    // Load events
+    await loadEvents();
+    logger.info('Events loaded successfully');
+    
+    // Load commands
+    await loadCommands();
+    logger.info('Commands loaded successfully');
+    
+    // Login to Discord
+    await client.login(process.env.DISCORD_BOT_TOKEN);
+    
+  } catch (error) {
+    logger.error('Failed to start bot:', error);
+    process.exit(1);
+  }
+}
+
+// Handle graceful shutdown
+async function shutdown() {
+  logger.info('Shutting down bot...');
+  
+  try {
+    // Close database connections
+    await closeDatabase();
+    logger.info('Database connections closed');
+    
+    // Destroy Discord client
+    client.destroy();
+    logger.info('Discord client destroyed');
+    
+  } catch (error) {
+    logger.error('Error during shutdown:', error);
+  }
+  
+  process.exit(0);
+}
+
+// Process signals
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
+
+// Unhandled promise rejections
+process.on('unhandledRejection', (error) => {
+  logger.error('Unhandled promise rejection:', error);
+});
+
+// Uncaught exceptions
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught exception:', error);
+  shutdown();
+});
+
+// Start the bot
+main();

@@ -35,15 +35,22 @@ async function loadEvents() {
 
   for (const file of eventFiles) {
     const filePath = path.join(eventsPath, file);
-    const event = require(filePath);
+    console.log(`Loading event file: ${file}`);
     
-    if (event.default.once) {
-      client.once(event.default.name, (...args) => event.default.execute(...args));
-    } else {
-      client.on(event.default.name, (...args) => event.default.execute(...args));
+    try {
+      const event = require(filePath);
+      
+      if (event.default.once) {
+        client.once(event.default.name, (...args) => event.default.execute(...args));
+      } else {
+        client.on(event.default.name, (...args) => event.default.execute(...args));
+      }
+      
+      logger.info(`Loaded event: ${event.default.name}`);
+    } catch (error) {
+      console.error(`Error loading event ${file}:`, error);
+      throw error;
     }
-    
-    logger.info(`Loaded event: ${event.default.name}`);
   }
 }
 

@@ -1,124 +1,149 @@
 # Discord GitHub Bot
 
-Discord bot for GitHub issue integration that automatically displays issue information when issue numbers are mentioned in Discord messages.
+GitHubのIssue情報をDiscordチャンネルに表示するBotです。
 
-## Features
+## 🌟 主な機能
 
-- Automatic issue number detection (#123 or git#123)
-- Rich embed display with issue details
-- Caching for performance optimization
-- Rate limit handling
-- Multi-repository support
+- `/send #123` コマンドでGitHub Issue情報を指定チャンネルに投稿
+- Issue情報をリッチな埋め込み形式で表示
+- ステータスによる色分け（Open: 緑、Closed: 赤、Draft: 黄）
+- 5分間のキャッシュ機能でAPIレート制限を回避
+- 24時間365日稼働（Railway使用）
 
-## Prerequisites
+## 🚀 使い方
 
-- Node.js 18.0.0 or higher
+### コマンド
+```
+/send #123
+```
+- Issue番号（#123 または 123）を指定して、Issue情報を投稿します
+- 投稿先は環境変数で設定した特定チャンネルになります
+
+## 🔧 必要な環境
+
+- Node.js 18.0.0以上
 - Discord Bot Token
 - GitHub Personal Access Token
 - SQLite3
 
-## Installation
+## 📦 インストール
 
-1. Clone the repository:
+1. リポジトリをクローン:
 ```bash
-git clone https://github.com/yourusername/discord-github-bot.git
+git clone https://github.com/rei-Nempi/discord-github-bot.git
 cd discord-github-bot
 ```
 
-2. Install dependencies:
+2. 依存関係をインストール:
 ```bash
 npm install
 ```
 
-3. Copy the environment variables template:
+3. 環境変数を設定:
 ```bash
 cp .env.example .env
 ```
 
-4. Configure your `.env` file with the required tokens and settings.
+4. `.env`ファイルを編集:
+```env
+DISCORD_BOT_TOKEN=あなたのDiscordボットトークン
+GITHUB_TOKEN=あなたのGitHubトークン
+TARGET_CHANNEL_ID=投稿先チャンネルID
+TARGET_GUILD_ID=サーバーID
+DEFAULT_REPOSITORY=microsoft/vscode
+```
 
-## Configuration
+## 🏃 開発
 
-Edit the `.env` file with your configuration:
-
-- `DISCORD_BOT_TOKEN`: Your Discord bot token
-- `DISCORD_CLIENT_ID`: Your Discord application client ID
-- `GITHUB_TOKEN`: Your GitHub personal access token
-- `GITHUB_OWNER`: Default repository owner
-- `GITHUB_REPO`: Default repository name
-
-## Development
-
-### Running in development mode:
+### 開発モードで実行:
 ```bash
 npm run dev
 ```
 
-### Building the project:
+### ビルド:
 ```bash
 npm run build
 ```
 
-### Running tests:
-```bash
-npm test
-```
-
-### Linting:
-```bash
-npm run lint
-```
-
-### Type checking:
-```bash
-npm run typecheck
-```
-
-## Project Structure
-
-```
-discord-github-bot/
-├── src/
-│   ├── commands/      # Discord slash commands
-│   ├── events/        # Discord event handlers
-│   ├── handlers/      # Message and interaction handlers
-│   ├── services/      # Business logic (GitHub API, Cache, etc.)
-│   ├── utils/         # Utility functions
-│   └── types/         # TypeScript type definitions
-├── tests/
-│   ├── unit/          # Unit tests
-│   └── integration/   # Integration tests
-├── data/              # SQLite database storage
-└── dist/              # Compiled JavaScript output
-```
-
-## Usage
-
-1. Start the bot:
+### 本番環境で実行:
 ```bash
 npm start
 ```
 
-2. In Discord, mention an issue number in any message:
-   - Example: "Check out issue #123"
-   - Example: "This is related to git#456"
+### PM2で常時起動:
+```bash
+npm run pm2:start
+```
 
-3. The bot will automatically fetch and display the issue information in an embed.
+### その他のコマンド:
+```bash
+npm run lint        # Lintチェック
+npm run typecheck   # 型チェック
+npm test           # テスト実行
+```
 
-## Commands
+## 📁 プロジェクト構造
 
-- `!github set-repo owner/repository-name` - Set the repository for the current server
-- `!github list-repos` - List configured repositories
-- `!github remove-repo owner/repository-name` - Remove a repository configuration
+```
+discord-github-bot/
+├── src/
+│   ├── commands/      # Discordスラッシュコマンド
+│   ├── events/        # Discordイベントハンドラー
+│   ├── handlers/      # メッセージ処理
+│   ├── services/      # GitHub API、キャッシュ管理
+│   ├── database/      # データベース管理
+│   ├── utils/         # ユーティリティ関数
+│   └── types/         # TypeScript型定義
+├── docs/              # 設計ドキュメント
+├── dist/              # ビルド出力
+└── data/              # SQLiteデータベース
+```
 
-## Contributing
+## ☁️ デプロイ（Railway）
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. GitHubにプッシュ
+2. Railwayでプロジェクト作成
+3. 環境変数を設定
+4. 自動デプロイ完了
 
-## License
+詳細は[DEPLOYMENT-OPTIONS.md](./DEPLOYMENT-OPTIONS.md)を参照
 
-This project is licensed under the MIT License.
+## 🔐 必要な権限
+
+### Discord Bot権限
+- Send Messages
+- Embed Links
+- Use Slash Commands
+- Read Message History
+
+### Discord Developer Portal設定
+- Message Content Intentを有効化
+
+## 🛠️ トラブルシューティング
+
+### Botがオンラインにならない
+- Discord Developer PortalでMessage Content Intentが有効か確認
+- DISCORD_BOT_TOKENが正しく設定されているか確認
+
+### Issue情報が表示されない
+- GITHUB_TOKENが正しく設定されているか確認
+- GitHubトークンに必要な権限があるか確認
+
+## 📝 今後の機能追加予定
+
+- [ ] 複数リポジトリ対応
+- [ ] PR情報表示
+- [ ] Issue作成機能
+- [ ] 通知機能
+
+## 🤝 コントリビューション
+
+1. このリポジトリをフォーク
+2. 機能ブランチを作成 (`git checkout -b feature/amazing-feature`)
+3. 変更をコミット (`git commit -m 'Add amazing feature'`)
+4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
+5. Pull Requestを作成
+
+## 📄 ライセンス
+
+MITライセンス

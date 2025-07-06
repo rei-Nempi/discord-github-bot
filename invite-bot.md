@@ -1,25 +1,30 @@
 # Discord GitHub Bot 招待手順
 
 ## 必要な権限
+
 このBotは以下の権限が必要です：
 
 ### テキスト権限
+
 - ✅ メッセージを送信
 - ✅ 埋め込みリンク
 - ✅ メッセージ履歴を読む
 - ✅ チャンネルを見る
 
 ### アプリケーション権限
+
 - ✅ スラッシュコマンドを使用
 
 ## 招待手順
 
 ### ステップ 1: Application ID の確認
+
 1. [Discord Developer Portal](https://discord.com/developers/applications) にアクセス
 2. あなたのBotアプリケーションを選択
 3. 「General Information」タブで Application ID をコピー
 
 ### ステップ 2: 招待URLの作成
+
 以下のURLの `YOUR_APPLICATION_ID` を実際のIDに置き換えてください：
 
 ```
@@ -27,6 +32,7 @@ https://discord.com/oauth2/authorize?client_id=YOUR_APPLICATION_ID&permissions=1
 ```
 
 ### ステップ 3: サーバーに招待
+
 1. 上記URLをブラウザで開く
 2. 招待先のサーバーを選択
 3. 権限を確認して「認証」をクリック
@@ -37,19 +43,23 @@ https://discord.com/oauth2/authorize?client_id=YOUR_APPLICATION_ID&permissions=1
 Bot が招待できたら、以下でテストできます：
 
 ### Issue番号の検出テスト
+
 Discordチャンネルで以下のメッセージを送信：
+
 ```
 #123
 git#456
 ```
 
 ### 設定されているリポジトリの確認
+
 現在は環境変数 `DEFAULT_REPOSITORY` で設定されたリポジトリを使用します。
 例：`microsoft/vscode`
 
 ## トラブルシューティング
 
 ### よくある問題
+
 1. **Bot がメッセージに反応しない**
    - Bot が正常に起動しているか確認
    - 必要な権限が付与されているか確認

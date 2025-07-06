@@ -3,6 +3,7 @@
 ## 1. API概要
 
 ### 1.1 API種別
+
 - **Discord Events API**: Discord.jsイベントベース
 - **GitHub REST API**: GitHub API v4 連携
 - **Internal Service API**: 内部サービス間通信
@@ -10,6 +11,7 @@
 - **Cache API**: キャッシュ管理
 
 ### 1.2 認証方式
+
 - **Discord**: Bot Token (Bearer Token)
 - **GitHub**: Personal Access Token (PAT)
 - **Internal**: Service-to-Service (No Auth)
@@ -19,10 +21,11 @@
 ### 2.1 メッセージ処理API
 
 #### 2.1.1 messageCreate Event
+
 ```typescript
 interface MessageCreateEvent {
   message: Discord.Message;
-  
+
   // Event Handler
   handler: (message: Discord.Message) => Promise<void>;
 }
@@ -32,15 +35,15 @@ class MessageHandler {
   async handleMessageCreate(message: Discord.Message): Promise<void> {
     // 1. ボットメッセージを除外
     if (message.author.bot) return;
-    
+
     // 2. Issue番号検出
     const issueRefs = this.parseIssueReferences(message.content);
     if (issueRefs.length === 0) return;
-    
+
     // 3. Guild設定確認
     const config = await this.getGuildConfig(message.guild.id);
     if (!config.enabled) return;
-    
+
     // 4. Issue情報取得・表示
     await this.processIssueReferences(message, issueRefs, config);
   }
@@ -48,6 +51,7 @@ class MessageHandler {
 ```
 
 #### 2.1.2 Issue参照処理
+
 ```typescript
 interface IssueReferenceRequest {
   messageId: string;
@@ -75,6 +79,7 @@ interface ProcessedIssue {
 ### 2.2 コマンド処理API
 
 #### 2.2.1 スラッシュコマンド定義
+
 ```typescript
 // Repository管理コマンド
 const COMMANDS = [
@@ -91,20 +96,20 @@ const COMMANDS = [
             name: 'repository',
             description: 'owner/repo形式',
             type: ApplicationCommandOptionType.String,
-            required: true
+            required: true,
           },
           {
             name: 'alias',
             description: 'エイリアス名',
             type: ApplicationCommandOptionType.String,
-            required: false
-          }
-        ]
+            required: false,
+          },
+        ],
       },
       {
         name: 'list-repos',
         description: 'リポジトリ一覧表示',
-        type: ApplicationCommandOptionType.Subcommand
+        type: ApplicationCommandOptionType.Subcommand,
       },
       {
         name: 'remove-repo',
@@ -115,16 +120,17 @@ const COMMANDS = [
             name: 'repository',
             description: 'owner/repo形式またはエイリアス',
             type: ApplicationCommandOptionType.String,
-            required: true
-          }
-        ]
-      }
-    ]
-  }
+            required: true,
+          },
+        ],
+      },
+    ],
+  },
 ];
 ```
 
 #### 2.2.2 コマンド処理インターフェース
+
 ```typescript
 interface CommandRequest {
   interaction: Discord.CommandInteraction;
@@ -149,7 +155,7 @@ abstract class BaseCommand {
   abstract name: string;
   abstract description: string;
   abstract execute(request: CommandRequest): Promise<CommandResponse>;
-  
+
   protected checkPermissions(member: Discord.GuildMember): boolean {
     return member.permissions.has(PermissionFlagsBits.ManageGuild);
   }
@@ -161,6 +167,7 @@ abstract class BaseCommand {
 ### 3.1 Issue情報取得API
 
 #### 3.1.1 Issue取得エンドポイント
+
 ```typescript
 interface GitHubIssueRequest {
   owner: string;
@@ -197,6 +204,7 @@ interface GitHubIssue {
 ```
 
 #### 3.1.2 GitHub Service実装
+
 ```typescript
 class GitHubService {
   private octokit: Octokit;
@@ -207,13 +215,13 @@ class GitHubService {
     // 1. キャッシュ確認
     const cacheKey = this.generateCacheKey(request);
     const cached = await this.cache.get<GitHubIssue>(cacheKey);
-    
+
     if (cached) {
       return {
         issue: cached,
         rateLimit: await this.getRateLimit(),
         cached: true,
-        requestTime: 0
+        requestTime: 0,
       };
     }
 
@@ -226,11 +234,11 @@ class GitHubService {
       const response = await this.octokit.rest.issues.get({
         owner: request.owner,
         repo: request.repo,
-        issue_number: request.issueNumber
+        issue_number: request.issueNumber,
       });
 
       const issue = this.transformIssueData(response.data);
-      
+
       // 4. キャッシュ保存
       await this.cache.set(cacheKey, issue, 300); // 5分
 
@@ -238,7 +246,7 @@ class GitHubService {
         issue,
         rateLimit: this.extractRateLimit(response.headers),
         cached: false,
-        requestTime: Date.now() - startTime
+        requestTime: Date.now() - startTime,
       };
     } catch (error) {
       throw this.handleGitHubError(error);
@@ -252,6 +260,7 @@ class GitHubService {
 ```
 
 ### 3.2 Repository検証API
+
 ```typescript
 interface RepositoryValidationRequest {
   owner: string;
@@ -281,22 +290,22 @@ class RepositoryValidator {
     try {
       const response = await this.octokit.rest.repos.get({
         owner: request.owner,
-        repo: request.repo
+        repo: request.repo,
       });
 
-      const permissions = request.checkAccess 
+      const permissions = request.checkAccess
         ? await this.getRepositoryPermissions(request.owner, request.repo)
         : undefined;
 
       return {
         valid: true,
         repository: response.data,
-        permissions
+        permissions,
       };
     } catch (error) {
       return {
         valid: false,
-        error: this.handleValidationError(error)
+        error: this.handleValidationError(error),
       };
     }
   }
@@ -308,20 +317,21 @@ class RepositoryValidator {
 ### 4.1 設定管理API
 
 #### 4.1.1 Guild設定管理
+
 ```typescript
 interface GuildConfigService {
   // 設定取得
   getConfig(guildId: string): Promise<GuildConfig>;
-  
+
   // 設定更新
   updateConfig(guildId: string, config: Partial<GuildConfig>): Promise<void>;
-  
+
   // リポジトリ追加
   addRepository(guildId: string, repo: RepositoryConfig): Promise<void>;
-  
+
   // リポジトリ削除
   removeRepository(guildId: string, identifier: string): Promise<void>;
-  
+
   // リポジトリ一覧
   listRepositories(guildId: string): Promise<RepositoryConfig[]>;
 }
@@ -356,6 +366,7 @@ interface BotSettings {
 ```
 
 #### 4.1.2 設定サービス実装
+
 ```typescript
 class ConfigService implements GuildConfigService {
   constructor(private db: Database) {}
@@ -381,7 +392,7 @@ class ConfigService implements GuildConfigService {
     `;
 
     const result = await this.db.get(query, [guildId]);
-    
+
     if (!result) {
       return this.createDefaultConfig(guildId);
     }
@@ -389,10 +400,7 @@ class ConfigService implements GuildConfigService {
     return this.transformConfigData(result);
   }
 
-  async addRepository(
-    guildId: string, 
-    repo: RepositoryConfig
-  ): Promise<void> {
+  async addRepository(guildId: string, repo: RepositoryConfig): Promise<void> {
     const query = `
       INSERT INTO repositories (
         guild_id, owner, repo, alias, enabled, channels
@@ -405,7 +413,7 @@ class ConfigService implements GuildConfigService {
       repo.repo,
       repo.alias,
       repo.enabled,
-      JSON.stringify(repo.channels || [])
+      JSON.stringify(repo.channels || []),
     ]);
   }
 }
@@ -414,6 +422,7 @@ class ConfigService implements GuildConfigService {
 ### 4.2 キャッシュ管理API
 
 #### 4.2.1 キャッシュインターフェース
+
 ```typescript
 interface CacheManager {
   // 基本操作
@@ -421,15 +430,15 @@ interface CacheManager {
   set<T>(key: string, value: T, ttl?: number): Promise<void>;
   delete(key: string): Promise<void>;
   exists(key: string): Promise<boolean>;
-  
+
   // バッチ操作
   mget<T>(keys: string[]): Promise<(T | null)[]>;
-  mset<T>(entries: Array<{key: string, value: T, ttl?: number}>): Promise<void>;
-  
+  mset<T>(entries: Array<{ key: string; value: T; ttl?: number }>): Promise<void>;
+
   // パターン操作
   keys(pattern: string): Promise<string[]>;
   deletePattern(pattern: string): Promise<number>;
-  
+
   // 統計
   getStats(): Promise<CacheStats>;
   cleanup(): Promise<number>;
@@ -445,32 +454,27 @@ interface CacheStats {
 
 // Cache Key Constants
 export const CACHE_KEYS = {
-  ISSUE: (owner: string, repo: string, number: number) => 
-    `issue:${owner}:${repo}:${number}`,
-  
-  REPOSITORY: (owner: string, repo: string) => 
-    `repo:${owner}:${repo}`,
-    
-  USER: (username: string) => 
-    `user:${username}`,
-    
-  GUILD_CONFIG: (guildId: string) => 
-    `config:guild:${guildId}`,
-    
-  RATE_LIMIT: (service: string) => 
-    `rate_limit:${service}`,
-    
-  REPOSITORY_LIST: (guildId: string) => 
-    `repos:${guildId}`
+  ISSUE: (owner: string, repo: string, number: number) => `issue:${owner}:${repo}:${number}`,
+
+  REPOSITORY: (owner: string, repo: string) => `repo:${owner}:${repo}`,
+
+  USER: (username: string) => `user:${username}`,
+
+  GUILD_CONFIG: (guildId: string) => `config:guild:${guildId}`,
+
+  RATE_LIMIT: (service: string) => `rate_limit:${service}`,
+
+  REPOSITORY_LIST: (guildId: string) => `repos:${guildId}`,
 } as const;
 ```
 
 #### 4.2.2 多層キャッシュ実装
+
 ```typescript
 class MultiLevelCache implements CacheManager {
   private memoryCache: Map<string, CacheEntry>;
   private databaseCache: DatabaseCache;
-  
+
   constructor(
     private maxMemorySize: number = 1000,
     private defaultTTL: number = 300
@@ -511,7 +515,7 @@ class MultiLevelCache implements CacheManager {
 
     this.memoryCache.set(key, {
       value,
-      expiresAt: Date.now() + (ttl * 1000)
+      expiresAt: Date.now() + ttl * 1000,
     });
   }
 }
@@ -520,6 +524,7 @@ class MultiLevelCache implements CacheManager {
 ## 5. エラーハンドリングAPI
 
 ### 5.1 エラー定義
+
 ```typescript
 // Base Error Classes
 abstract class BotError extends Error {
@@ -527,7 +532,7 @@ abstract class BotError extends Error {
   abstract readonly statusCode: number;
   abstract readonly userMessage: string;
   abstract readonly category: ErrorCategory;
-  
+
   constructor(
     message: string,
     public readonly cause?: Error,
@@ -536,7 +541,7 @@ abstract class BotError extends Error {
     super(message);
     this.name = this.constructor.name;
   }
-  
+
   toJSON() {
     return {
       name: this.name,
@@ -546,7 +551,7 @@ abstract class BotError extends Error {
       statusCode: this.statusCode,
       category: this.category,
       metadata: this.metadata,
-      stack: this.stack
+      stack: this.stack,
     };
   }
 }
@@ -557,7 +562,7 @@ enum ErrorCategory {
   VALIDATION = 'validation',
   AUTHENTICATION = 'authentication',
   RATE_LIMIT = 'rate_limit',
-  INTERNAL = 'internal'
+  INTERNAL = 'internal',
 }
 
 // Specific Error Types
@@ -580,7 +585,7 @@ class RateLimitExceededError extends BotError {
   readonly statusCode = 429;
   readonly userMessage = 'しばらく時間をおいて再試行してください';
   readonly category = ErrorCategory.RATE_LIMIT;
-  
+
   constructor(
     message: string,
     public readonly resetTime: Date,
@@ -607,6 +612,7 @@ class InsufficientPermissionsError extends BotError {
 ```
 
 ### 5.2 エラーハンドラー
+
 ```typescript
 interface ErrorHandler {
   handleError(error: Error, context: ErrorContext): Promise<ErrorResponse>;
@@ -636,9 +642,11 @@ interface ErrorResponse {
 
 class GitHubErrorHandler implements ErrorHandler {
   canHandle(error: Error): boolean {
-    return error instanceof GitHubApiError || 
-           error.message.includes('GitHub') ||
-           (error as any).status >= 400;
+    return (
+      error instanceof GitHubApiError ||
+      error.message.includes('GitHub') ||
+      (error as any).status >= 400
+    );
   }
 
   async handleError(error: Error, context: ErrorContext): Promise<ErrorResponse> {
@@ -646,11 +654,11 @@ class GitHubErrorHandler implements ErrorHandler {
       return {
         userNotification: {
           embed: this.createRateLimitEmbed(error),
-          ephemeral: true
+          ephemeral: true,
         },
         logLevel: 'warn',
         shouldRetry: true,
-        retryAfter: Math.ceil((error.resetTime.getTime() - Date.now()) / 1000)
+        retryAfter: Math.ceil((error.resetTime.getTime() - Date.now()) / 1000),
       };
     }
 
@@ -658,10 +666,10 @@ class GitHubErrorHandler implements ErrorHandler {
       return {
         userNotification: {
           embed: this.createNotFoundEmbed(context.issueNumber, context.repository),
-          ephemeral: true
+          ephemeral: true,
         },
         logLevel: 'warn',
-        shouldRetry: false
+        shouldRetry: false,
       };
     }
 
@@ -669,11 +677,11 @@ class GitHubErrorHandler implements ErrorHandler {
     return {
       userNotification: {
         content: 'GitHub APIでエラーが発生しました。しばらく時間をおいて再試行してください。',
-        ephemeral: true
+        ephemeral: true,
       },
       logLevel: 'error',
       shouldRetry: true,
-      retryAfter: 60
+      retryAfter: 60,
     };
   }
 }
@@ -682,6 +690,7 @@ class GitHubErrorHandler implements ErrorHandler {
 ## 6. レート制限API
 
 ### 6.1 レート制限管理
+
 ```typescript
 interface RateLimiter {
   checkLimit(service: string, identifier?: string): Promise<RateLimitResult>;
@@ -705,8 +714,8 @@ interface RateLimitConfig {
 
 const RATE_LIMITS = {
   GITHUB_API: { requests: 5000, window: 3600 }, // per hour
-  DISCORD_API: { requests: 50, window: 1 },     // per second
-  ISSUE_PROCESSING: { requests: 10, window: 60 } // per minute per guild
+  DISCORD_API: { requests: 50, window: 1 }, // per second
+  ISSUE_PROCESSING: { requests: 10, window: 60 }, // per minute per guild
 } as const;
 
 class TokenBucketRateLimiter implements RateLimiter {
@@ -718,20 +727,20 @@ class TokenBucketRateLimiter implements RateLimiter {
     const bucket = this.getBucket(key, config);
 
     const available = bucket.consume(1);
-    
+
     return {
       allowed: available,
       remaining: bucket.tokens,
       resetTime: new Date(Date.now() + bucket.getRefillTime()),
-      retryAfter: available ? undefined : bucket.getRefillTime() / 1000
+      retryAfter: available ? undefined : bucket.getRefillTime() / 1000,
     };
   }
 
   async waitForAvailability(service: string, identifier = 'default'): Promise<void> {
     const result = await this.checkLimit(service, identifier);
-    
+
     if (!result.allowed && result.retryAfter) {
-      await new Promise(resolve => setTimeout(resolve, result.retryAfter * 1000));
+      await new Promise((resolve) => setTimeout(resolve, result.retryAfter * 1000));
     }
   }
 }
@@ -740,6 +749,7 @@ class TokenBucketRateLimiter implements RateLimiter {
 ## 7. 認証・認可API
 
 ### 7.1 権限管理
+
 ```typescript
 interface PermissionManager {
   checkBotPermissions(guild: Discord.Guild): Promise<BotPermissionResult>;
@@ -766,46 +776,48 @@ const REQUIRED_BOT_PERMISSIONS = [
   PermissionFlagsBits.SendMessages,
   PermissionFlagsBits.EmbedLinks,
   PermissionFlagsBits.ReadMessageHistory,
-  PermissionFlagsBits.UseSlashCommands
+  PermissionFlagsBits.UseSlashCommands,
 ] as const;
 
 const USER_ACTIONS = {
   MANAGE_REPOSITORIES: 'manage_repositories',
   VIEW_ANALYTICS: 'view_analytics',
-  MODIFY_SETTINGS: 'modify_settings'
+  MODIFY_SETTINGS: 'modify_settings',
 } as const;
 
 class PermissionService implements PermissionManager {
   async checkBotPermissions(guild: Discord.Guild): Promise<BotPermissionResult> {
     const botMember = await guild.members.fetch(this.botUserId);
     const permissions = botMember.permissions;
-    
-    const missingPermissions = REQUIRED_BOT_PERMISSIONS.filter(
-      perm => !permissions.has(perm)
-    );
+
+    const missingPermissions = REQUIRED_BOT_PERMISSIONS.filter((perm) => !permissions.has(perm));
 
     return {
       hasRequiredPermissions: missingPermissions.length === 0,
-      missingPermissions: missingPermissions.map(perm => perm.toString()),
+      missingPermissions: missingPermissions.map((perm) => perm.toString()),
       canSendMessages: permissions.has(PermissionFlagsBits.SendMessages),
       canSendEmbeds: permissions.has(PermissionFlagsBits.EmbedLinks),
-      canUseSlashCommands: permissions.has(PermissionFlagsBits.UseSlashCommands)
+      canUseSlashCommands: permissions.has(PermissionFlagsBits.UseSlashCommands),
     };
   }
 
   async checkUserPermissions(member: Discord.GuildMember, action: string): Promise<boolean> {
     switch (action) {
       case USER_ACTIONS.MANAGE_REPOSITORIES:
-        return member.permissions.has(PermissionFlagsBits.ManageGuild) ||
-               member.permissions.has(PermissionFlagsBits.Administrator);
-      
+        return (
+          member.permissions.has(PermissionFlagsBits.ManageGuild) ||
+          member.permissions.has(PermissionFlagsBits.Administrator)
+        );
+
       case USER_ACTIONS.VIEW_ANALYTICS:
-        return member.permissions.has(PermissionFlagsBits.ManageMessages) ||
-               member.permissions.has(PermissionFlagsBits.ManageGuild);
-      
+        return (
+          member.permissions.has(PermissionFlagsBits.ManageMessages) ||
+          member.permissions.has(PermissionFlagsBits.ManageGuild)
+        );
+
       case USER_ACTIONS.MODIFY_SETTINGS:
         return member.permissions.has(PermissionFlagsBits.Administrator);
-      
+
       default:
         return false;
     }
@@ -816,12 +828,13 @@ class PermissionService implements PermissionManager {
 ## 8. ログ・分析API
 
 ### 8.1 使用統計API
+
 ```typescript
 interface AnalyticsService {
   recordIssueView(data: IssueViewEvent): Promise<void>;
   recordCommandUsage(data: CommandUsageEvent): Promise<void>;
   recordError(data: ErrorEvent): Promise<void>;
-  
+
   getGuildStats(guildId: string, period: TimePeriod): Promise<GuildAnalytics>;
   getSystemStats(period: TimePeriod): Promise<SystemAnalytics>;
 }
@@ -862,8 +875,8 @@ interface ErrorEvent {
 interface GuildAnalytics {
   totalIssueViews: number;
   uniqueUsers: number;
-  mostViewedIssues: Array<{repository: string, issueNumber: number, views: number}>;
-  commandUsage: Array<{command: string, count: number}>;
+  mostViewedIssues: Array<{ repository: string; issueNumber: number; views: number }>;
+  commandUsage: Array<{ command: string; count: number }>;
   errorRate: number;
   averageResponseTime: number;
   cacheHitRate: number;
@@ -873,7 +886,7 @@ enum TimePeriod {
   HOUR = 'hour',
   DAY = 'day',
   WEEK = 'week',
-  MONTH = 'month'
+  MONTH = 'month',
 }
 ```
 

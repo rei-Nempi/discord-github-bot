@@ -3,6 +3,7 @@
 ## 1. システム全体アーキテクチャ
 
 ### 1.1 システム概要図
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Discord User  │    │  GitHub Issues  │    │   Config Web    │
@@ -32,6 +33,7 @@
 ```
 
 ### 1.2 レイヤード・アーキテクチャ
+
 ```
 ┌─────────────────────────────────────────────────────┐
 │                Presentation Layer                   │
@@ -56,6 +58,7 @@
 ### 2.1 主要コンポーネント
 
 #### 2.1.1 Core Components
+
 ```typescript
 // Bot Entry Point
 class DiscordBot {
@@ -83,6 +86,7 @@ class ServiceContainer {
 ```
 
 #### 2.1.2 Message Processing Components
+
 ```typescript
 // Message Handler
 class MessageHandler {
@@ -111,6 +115,7 @@ interface IssueReference {
 ```
 
 #### 2.1.3 GitHub Integration Components
+
 ```typescript
 // GitHub Service
 class GitHubService {
@@ -145,6 +150,7 @@ class RateLimiter {
 ### 2.2 データモデル
 
 #### 2.2.1 Core Models
+
 ```typescript
 // Issue Model
 interface Issue {
@@ -202,6 +208,7 @@ interface BotSettings {
 ## 3. データフロー設計
 
 ### 3.1 Issue参照フロー
+
 ```
 1. Message Received
    ↓
@@ -225,6 +232,7 @@ interface BotSettings {
 ```
 
 ### 3.2 設定管理フロー
+
 ```
 1. Admin Command Received
    ↓
@@ -246,6 +254,7 @@ interface BotSettings {
 ## 4. データベース設計
 
 ### 4.1 テーブル構造
+
 ```sql
 -- Guild Configuration
 CREATE TABLE guild_configs (
@@ -294,6 +303,7 @@ CREATE TABLE cache_entries (
 ```
 
 ### 4.2 インデックス設計
+
 ```sql
 -- Performance Indexes
 CREATE INDEX idx_repositories_guild_enabled ON repositories(guild_id, enabled);
@@ -308,6 +318,7 @@ CREATE INDEX idx_cache_cleanup ON cache_entries(expires_at);
 ## 5. セキュリティアーキテクチャ
 
 ### 5.1 認証・認可
+
 ```typescript
 // Security Manager
 class SecurityManager {
@@ -335,6 +346,7 @@ class PermissionChecker {
 ```
 
 ### 5.2 データ保護
+
 ```typescript
 // Data Sanitizer
 class DataSanitizer {
@@ -354,13 +366,14 @@ class AuditLogger {
 ## 6. パフォーマンス設計
 
 ### 6.1 キャッシュ戦略
+
 ```typescript
 // Multi-Level Cache
 class CacheStrategy {
   - memoryCache: Map<string, any>      // L1: In-Memory (60秒)
   - databaseCache: DatabaseCache       // L2: SQLite (5分)
   - distributedCache?: RedisCache      // L3: Redis (30分)
-  
+
   + get(key: string): Promise<any>
   + set(key: string, value: any, ttl: number): Promise<void>
   + invalidate(pattern: string): Promise<void>
@@ -368,18 +381,19 @@ class CacheStrategy {
 
 // Cache Keys
 const CACHE_KEYS = {
-  ISSUE: (owner: string, repo: string, number: number) => 
+  ISSUE: (owner: string, repo: string, number: number) =>
     `issue:${owner}:${repo}:${number}`,
-  REPOSITORY: (owner: string, repo: string) => 
+  REPOSITORY: (owner: string, repo: string) =>
     `repo:${owner}:${repo}`,
-  USER: (username: string) => 
+  USER: (username: string) =>
     `user:${username}`,
-  RATE_LIMIT: () => 
+  RATE_LIMIT: () =>
     'rate_limit:github'
 };
 ```
 
 ### 6.2 非同期処理
+
 ```typescript
 // Queue Manager
 class QueueManager {
@@ -407,6 +421,7 @@ interface CacheCleanupJob {
 ## 7. 監視・ログ設計
 
 ### 7.1 ログ構造
+
 ```typescript
 // Log Levels
 enum LogLevel {
@@ -414,7 +429,7 @@ enum LogLevel {
   INFO = 1,
   WARN = 2,
   ERROR = 3,
-  FATAL = 4
+  FATAL = 4,
 }
 
 // Log Entry
@@ -440,13 +455,14 @@ interface ILogger {
 ```
 
 ### 7.2 メトリクス
+
 ```typescript
 // Metrics Collector
 class MetricsCollector {
   - counters: Map<string, number>
   - gauges: Map<string, number>
   - histograms: Map<string, number[]>
-  
+
   + incrementCounter(name: string, value: number): void
   + setGauge(name: string, value: number): void
   + recordHistogram(name: string, value: number): void
@@ -468,6 +484,7 @@ const METRICS = {
 ## 8. 拡張性設計
 
 ### 8.1 プラグインアーキテクチャ
+
 ```typescript
 // Plugin Interface
 interface IBotPlugin {
@@ -488,6 +505,7 @@ class PluginManager {
 ```
 
 ### 8.2 設定の動的更新
+
 ```typescript
 // Config Watcher
 class ConfigWatcher {
@@ -508,14 +526,18 @@ class HotReloader {
 ## 9. エラーハンドリング設計
 
 ### 9.1 エラー階層
+
 ```typescript
 // Base Error
 abstract class BotError extends Error {
   abstract code: string;
   abstract statusCode: number;
   abstract userMessage: string;
-  
-  constructor(message: string, public cause?: Error) {
+
+  constructor(
+    message: string,
+    public cause?: Error
+  ) {
     super(message);
   }
 }
@@ -541,6 +563,7 @@ class RateLimitError extends BotError {
 ```
 
 ### 9.2 回復処理
+
 ```typescript
 // Retry Manager
 class RetryManager {
@@ -548,7 +571,7 @@ class RetryManager {
     operation: () => Promise<T>,
     options: RetryOptions
   ): Promise<T>
-  
+
   - calculateBackoff(attempt: number, options: RetryOptions): number
   - shouldRetry(error: Error, attempt: number, options: RetryOptions): boolean
 }
@@ -556,7 +579,7 @@ class RetryManager {
 // Circuit Breaker
 class CircuitBreaker {
   private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED';
-  
+
   + async execute<T>(operation: () => Promise<T>): Promise<T>
   - recordSuccess(): void
   - recordFailure(): void

@@ -13,9 +13,11 @@ GitHubのIssue情報をDiscordチャンネルに表示するBotです。
 ## 🚀 使い方
 
 ### コマンド
+
 ```
 /send #123
 ```
+
 - Issue番号（#123 または 123）を指定して、Issue情報を投稿します
 - 投稿先は環境変数で設定した特定チャンネルになります
 
@@ -29,22 +31,26 @@ GitHubのIssue情報をDiscordチャンネルに表示するBotです。
 ## 📦 インストール
 
 1. リポジトリをクローン:
+
 ```bash
 git clone https://github.com/rei-Nempi/discord-github-bot.git
 cd discord-github-bot
 ```
 
 2. 依存関係をインストール:
+
 ```bash
 npm install
 ```
 
 3. 環境変数を設定:
+
 ```bash
 cp .env.example .env
 ```
 
 4. `.env`ファイルを編集:
+
 ```env
 DISCORD_BOT_TOKEN=あなたのDiscordボットトークン
 GITHUB_TOKEN=あなたのGitHubトークン
@@ -56,26 +62,31 @@ DEFAULT_REPOSITORY=microsoft/vscode
 ## 🏃 開発
 
 ### 開発モードで実行:
+
 ```bash
 npm run dev
 ```
 
 ### ビルド:
+
 ```bash
 npm run build
 ```
 
 ### 本番環境で実行:
+
 ```bash
 npm start
 ```
 
 ### PM2で常時起動:
+
 ```bash
 npm run pm2:start
 ```
 
 ### その他のコマンド:
+
 ```bash
 npm run lint        # Lintチェック
 npm run typecheck   # 型チェック
@@ -111,21 +122,25 @@ discord-github-bot/
 ## 🔐 必要な権限
 
 ### Discord Bot権限
+
 - Send Messages
 - Embed Links
 - Use Slash Commands
 - Read Message History
 
 ### Discord Developer Portal設定
+
 - Message Content Intentを有効化
 
 ## 🛠️ トラブルシューティング
 
 ### Botがオンラインにならない
+
 - Discord Developer PortalでMessage Content Intentが有効か確認
 - DISCORD_BOT_TOKENが正しく設定されているか確認
 
 ### Issue情報が表示されない
+
 - GITHUB_TOKENが正しく設定されているか確認
 - GitHubトークンに必要な権限があるか確認
 

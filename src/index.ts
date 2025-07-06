@@ -5,17 +5,26 @@ import { closeDatabase } from './database/index';
 import fs from 'fs';
 import path from 'path';
 
-// Load environment variables
+/**
+ * 環境変数を読み込む
+ * .envファイルから設定値を取得
+ */
 try {
   config();
 } catch (error) {
   console.error('Error loading dotenv:', error);
 }
 
-// Create logger instance
+// ロガーインスタンスを作成
 const logger = createLogger('main');
 
-// Create Discord client
+/**
+ * Discord クライアントを作成
+ * 必要な権限（Intents）を設定:
+ * - Guilds: サーバー情報へのアクセス
+ * - GuildMessages: メッセージの読み取り
+ * - MessageContent: メッセージ内容へのアクセス
+ */
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -24,13 +33,18 @@ const client = new Client({
   ],
 });
 
-// Commands collection (for future slash commands)
+// スラッシュコマンドを格納するコレクション
 (client as any).commands = new Collection();
 
-// Load events
+/**
+ * イベントハンドラーを読み込む関数
+ * eventsディレクトリから全てのイベントファイルを読み込み、
+ * Discord.jsのイベントリスナーに登録する
+ */
 async function loadEvents() {
   const eventsPath = path.join(__dirname, 'events');
   console.log('Loading events from:', eventsPath);
+  // .jsファイルのみを対象とし、型定義ファイル(.d.ts)は除外
   const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js') && !file.endsWith('.d.ts'));
 
   for (const file of eventFiles) {
@@ -40,9 +54,11 @@ async function loadEvents() {
     try {
       const event = require(filePath);
       
+      // onceプロパティがtrueの場合は一度だけ実行されるイベントとして登録
       if (event.default.once) {
         client.once(event.default.name, (...args) => event.default.execute(...args));
       } else {
+        // 通常のイベントリスナーとして登録
         client.on(event.default.name, (...args) => event.default.execute(...args));
       }
       
@@ -54,22 +70,28 @@ async function loadEvents() {
   }
 }
 
-// Load commands (for future implementation)
+/**
+ * スラッシュコマンドを読み込む関数
+ * commandsディレクトリから全てのコマンドファイルを読み込み、
+ * コマンドコレクションに登録する
+ */
 async function loadCommands() {
   const commandsPath = path.join(__dirname, 'commands');
   
-  // Check if commands directory exists
+  // commandsディレクトリが存在しない場合はスキップ
   if (!fs.existsSync(commandsPath)) {
     logger.info('Commands directory not found, skipping command loading');
     return;
   }
   
+  // .jsファイルのみを対象とし、型定義ファイル(.d.ts)は除外
   const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js') && !file.endsWith('.d.ts'));
 
   for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
     const command = require(filePath);
     
+    // コマンドに必須のdataとexecuteプロパティが存在するか確認
     if ('data' in command.default && 'execute' in command.default) {
       (client as any).commands.set(command.default.data.name, command.default);
       logger.info(`Loaded command: ${command.default.data.name}`);
@@ -79,12 +101,16 @@ async function loadCommands() {
   }
 }
 
-// Bot startup
+/**
+ * Botの起動処理を行うメイン関数
+ * 環境変数の検証、イベント・コマンドの読み込み、
+ * Discordへのログインを実行する
+ */
 async function main() {
   try {
     logger.info('Starting Discord GitHub Bot...');
     
-    // Environment check
+    // 環境変数の設定状況を確認
     console.log('=== Environment Variables Check ===');
     console.log('NODE_ENV:', process.env.NODE_ENV);
     console.log('DISCORD_BOT_TOKEN:', process.env.DISCORD_BOT_TOKEN ? 'Set' : 'Not set');
@@ -93,7 +119,7 @@ async function main() {
     console.log('TARGET_GUILD_ID:', process.env.TARGET_GUILD_ID);
     console.log('================================');
     
-    // Validate required environment variables
+    // 必須環境変数の検証
     if (!process.env.DISCORD_BOT_TOKEN) {
       console.error('ERROR: DISCORD_BOT_TOKEN is not set in Railway Variables!');
       throw new Error('DISCORD_BOT_TOKEN is required');
@@ -104,15 +130,15 @@ async function main() {
       throw new Error('GITHUB_TOKEN is required');
     }
     
-    // Load events
+    // イベントハンドラーを読み込み
     await loadEvents();
     logger.info('Events loaded successfully');
     
-    // Load commands
+    // コマンドを読み込み
     await loadCommands();
     logger.info('Commands loaded successfully');
     
-    // Login to Discord
+    // Discordにログイン
     logger.info('Attempting to login to Discord...');
     await client.login(process.env.DISCORD_BOT_TOKEN);
     logger.info('Successfully logged in to Discord');
@@ -125,16 +151,20 @@ async function main() {
   }
 }
 
-// Handle graceful shutdown
+/**
+ * グレースフルシャットダウンを処理する関数
+ * データベース接続のクローズとDiscordクライアントの
+ * 適切な終了処理を行う
+ */
 async function shutdown() {
   logger.info('Shutting down bot...');
   
   try {
-    // Close database connections
+    // データベース接続をクローズ
     await closeDatabase();
     logger.info('Database connections closed');
     
-    // Destroy Discord client
+    // Discordクライアントを破棄
     client.destroy();
     logger.info('Discord client destroyed');
     
@@ -145,20 +175,30 @@ async function shutdown() {
   process.exit(0);
 }
 
-// Process signals
+/**
+ * プロセスシグナルのハンドリング
+ * SIGINT: Ctrl+C による終了
+ * SIGTERM: システムからの終了要求
+ */
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
-// Unhandled promise rejections
+/**
+ * 未処理のPromiseリジェクションをキャッチ
+ * エラーログを出力するが、プロセスは継続
+ */
 process.on('unhandledRejection', (error) => {
   logger.error('Unhandled promise rejection:', error);
 });
 
-// Uncaught exceptions
+/**
+ * 未キャッチの例外をハンドリング
+ * 致命的なエラーのため、シャットダウン処理を実行
+ */
 process.on('uncaughtException', (error) => {
   logger.error('Uncaught exception:', error);
   shutdown();
 });
 
-// Start the bot
+// Botを起動
 main();

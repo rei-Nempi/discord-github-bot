@@ -101,10 +101,14 @@ async function main() {
     logger.info('Commands loaded successfully');
     
     // Login to Discord
+    logger.info('Attempting to login to Discord...');
     await client.login(process.env.DISCORD_BOT_TOKEN);
+    logger.info('Successfully logged in to Discord');
     
   } catch (error) {
     logger.error('Failed to start bot:', error);
+    console.error('CRITICAL ERROR:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     process.exit(1);
   }
 }

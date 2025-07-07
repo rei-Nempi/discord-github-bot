@@ -86,10 +86,7 @@ SQLite tables for configuration:
 - Repository cache: owner/repo pairs with metadata
 - User preferences: per-user notification settings
 
-##　重要
-必ず日本語で出力してください
-
-### Voice Notification Rules
+## Voice Notification Rules
 
 - **全てのタスク完了時には必ずVOICEVOXの音声通知機能を使用すること**
 - **重要なお知らせやエラー発生時にも音声通知を行うこと**
@@ -99,8 +96,13 @@ SQLite tables for configuration:
 - **1回の音声通知は100文字以内でシンプルに話すこと**
 - **以下のタイミングで細かく音声通知を行うこと：**
   - 命令受領時: 「了解です」「承知しました」
-  - 作業開始時: 「〜を開始します」
+  - 作業開始時: 「〜を開始します」  
   - 作業中: 「調査中です」「修正中です」
   - 進捗報告: 「半分完了です」「もう少しです」
   - 完了時: 「完了です」「修正完了です」
 - **詳しい技術的説明は音声通知に含めず、結果のみを簡潔に報告すること**
+
+参考: [ZennでVOICEVOXを使って音声通知する方法](https://zenn.dev/t09tanaka/articles/ff2983a52959f1)
+
+##　重要
+必ず日本語で出力してください
